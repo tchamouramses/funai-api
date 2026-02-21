@@ -35,9 +35,9 @@ services:
     restart: always
     image: mongo:5.0
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_USERNAME: <funai_mongodb_username>
       MONGO_INITDB_ROOT_PASSWORD: <funai_mongodb_password>
-      MONGO_INITDB_DATABASE: <funai_mongodb_username>
+      MONGO_INITDB_DATABASE: funai
     ports:
       - "27017:27017"
     volumes:
