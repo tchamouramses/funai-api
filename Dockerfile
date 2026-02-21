@@ -30,7 +30,7 @@ CMD sh -c "echo 'Waiting for database...'; \
     echo 'Database is up!'; \
     php artisan migrate --force; \
     php artisan storage:link; \
-    php artisan optimize \
+    php artisan optimize; \
     php artisan queue:work -q > /var/log/queue.log 2>&1 & \
     echo 'Starting Laravel Schedule worker...'; \
     php artisan schedule:work -q > /var/log/schedulelog.log 2>&1 & \
