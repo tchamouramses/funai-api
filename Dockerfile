@@ -1,4 +1,6 @@
-FROM php8.4-apache
+FROM php:8.4-apache
+
+WORKDIR /var/www/html
 
 RUN apt-get update && apt-get install -y \
     libpng-dev \
@@ -13,9 +15,10 @@ RUN apt-get update && apt-get install -y \
 RUN docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/
 RUN docker-php-ext-install gd mbstring pdo pdo_mysql zip opcache bcmath intl pcntl sockets
 
+RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-WORKDIR /var/www/html
+COPY . .
 
 RUN composer install --no-interaction --no-dev --prefer-dist
 
