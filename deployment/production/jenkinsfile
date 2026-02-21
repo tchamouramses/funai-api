@@ -11,7 +11,7 @@ pipeline {
                 script {
                     sh '''
                     cp .env.prod .env
-                    cp deploiement/production/docker-compose.prod.yml docker-compose.yml
+                    cp deployment/production/docker-compose.prod.yml docker-compose.yml
                     '''
 
                     def bparams = [
