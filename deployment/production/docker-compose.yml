@@ -33,7 +33,7 @@ services:
   funai-db-mongodb:
     container_name: funai-db-mongodb
     restart: always
-    image: mongo:lts
+    image: mongo:5.0
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: <funai_mongodb_password>
