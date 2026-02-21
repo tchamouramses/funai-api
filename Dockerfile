@@ -1,4 +1,4 @@
-FROM php8.4-fpm
+FROM php8.4-apache
 
 ARG MYSQL_DB_SERVER
 ARG MYSQL_DB_PORT
