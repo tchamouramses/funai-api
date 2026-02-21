@@ -2,18 +2,15 @@ FROM php:8.4-apache
 
 WORKDIR /var/www/html
 
-RUN apt-get update && apt-get install -y \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    git \
-    curl
-
-RUN docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/
-RUN docker-php-ext-install gd mbstring pdo pdo_mysql zip opcache bcmath intl pcntl sockets
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+RUN sed -i "s|/var/www/html|${APACHE_DOCUMENT_ROOT}|g" /etc/apache2/sites-available/000-default.conf && \
+    apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    zip unzip git curl netcat-traditional libpng-dev libjpeg-dev libfreetype6-dev libicu-dev \
+    libonig-dev libxml2-dev libzip-dev libssl-dev && \
+    docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install gd mbstring pdo pdo_mysql zip opcache bcmath intl && \
+    a2enmod rewrite && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
