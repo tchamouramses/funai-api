@@ -5,11 +5,12 @@ namespace App\Http\Controllers\Api\ListItem;
 use App\Exceptions\ResourceNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Models\ListItem;
+use App\Services\RecurringTaskService;
 use Illuminate\Http\JsonResponse;
 
 class CompleteController extends Controller
 {
-    public function __invoke(string $id): JsonResponse
+    public function __invoke(string $id, RecurringTaskService $recurringTaskService): JsonResponse
     {
         $item = ListItem::find($id);
 
@@ -18,8 +19,15 @@ class CompleteController extends Controller
         }
 
         if (! $item->completed) {
-            $item->update(['completed' => true]);
-            $item->list->increment('total_completed_count');
+            $item->update([
+                'completed' => true,
+                'missed_at' => null,
+            ]);
+
+            $item->list?->increment('total_completed_count');
+
+            $recurringTaskService->recordRecurrenceStatus($item, 'done');
+            $recurringTaskService->cloneNextOccurrenceIfNeeded($item, $item->list);
         }
 
         return response()->json([

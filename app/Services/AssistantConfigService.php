@@ -790,23 +790,6 @@ TEXT,
                     ],
                 ],
             ],
-            [
-                'type' => 'function',
-                'function' => [
-                    'name' => 'navigate_to_list',
-                    'description' => 'Navigue vers une liste spécifique',
-                    'parameters' => [
-                        'type' => 'object',
-                        'properties' => [
-                            'listId' => [
-                                'type' => 'string',
-                                'description' => 'ID de la liste',
-                            ],
-                        ],
-                        'required' => ['listId'],
-                    ],
-                ],
-            ],
         ];
     }
 }

@@ -6,11 +6,16 @@ use App\Exceptions\ResourceNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateListItemRequest;
 use App\Models\ListItem;
+use App\Services\RecurringTaskService;
 use Illuminate\Http\JsonResponse;
 
 class UpdateController extends Controller
 {
-    public function __invoke(string $id, UpdateListItemRequest $request): JsonResponse
+    public function __invoke(
+        string $id,
+        UpdateListItemRequest $request,
+        RecurringTaskService $recurringTaskService
+    ): JsonResponse
     {
         $item = ListItem::find($id);
 
@@ -28,16 +33,33 @@ class UpdateController extends Controller
 
         if (array_key_exists('completed', $validated) && $validated['completed'] === false) {
             $validated['expired_notified_at'] = null;
+            $validated['missed_at'] = null;
+        }
+
+        $markAsCompleted = array_key_exists('completed', $validated)
+            && $validated['completed'] === true
+            && ! $wasCompleted;
+
+        if ($markAsCompleted) {
+            unset($validated['completed']);
         }
 
         $item->update($validated);
 
-        if (! $wasCompleted && $item->completed) {
+        if ($markAsCompleted) {
+            $item->update([
+                'completed' => true,
+                'missed_at' => null,
+            ]);
+
             $list = $item->list;
-            $list->increment('total_completed_count');
+            $list?->increment('total_completed_count');
+
+            $recurringTaskService->recordRecurrenceStatus($item, 'done');
+            $recurringTaskService->cloneNextOccurrenceIfNeeded($item, $list);
         } elseif ($wasCompleted && ! $item->completed) {
             $list = $item->list;
-            $list->decrement('total_completed_count');
+            $list?->decrement('total_completed_count');
         }
 
         return response()->json([

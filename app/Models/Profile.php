@@ -16,6 +16,7 @@ class Profile extends Model
     protected $fillable = [
         'email',
         'full_name',
+        'locale',
         'notification_settings',
     ];
 

@@ -16,6 +16,9 @@ class StoreListItemRequest extends FormRequest
         return [
             'list_id' => 'required|string',
             'content' => 'required|string|min:1|max:500',
+            'completed' => 'nullable|boolean',
+            'order' => 'nullable|integer|min:0',
+            'task_day' => 'nullable|integer|min:0',
             'due_date' => 'nullable|date',
             'notification_time' => 'nullable|integer|min:0',
             'metadata' => 'nullable|array',

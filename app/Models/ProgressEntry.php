@@ -12,14 +12,16 @@ class ProgressEntry extends Model
 
     protected $fillable = [
         'item_id',
+        'series_id',
         'date',
         'value',
+        'status',
         'notes',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
-        'date' => 'date',
+        'date' => 'datetime',
     ];
 
     public $timestamps = false;

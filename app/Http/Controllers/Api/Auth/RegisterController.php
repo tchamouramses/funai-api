@@ -17,17 +17,22 @@ class RegisterController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'locale' => 'sometimes|string|in:en,fr,es',
         ]);
+
+        $locale = $request->input('locale', 'en');
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'locale' => $locale,
             'password' => Hash::make($request->password),
         ]);
 
         Profile::create([
             'email' => $user->email,
             'full_name' => $user->name,
+            'locale' => $locale,
             'notification_settings' => [
                 'enabled' => true,
                 'default_reminder_delay' => 15,

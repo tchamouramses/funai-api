@@ -19,8 +19,10 @@ class LogProgressController extends Controller
         }
 
         $entry = $item->progressEntries()->create([
+            'series_id' => $item->series_id ?: (string) $item->id,
             'date' => now(),
             'value' => $request->validated()['value'],
+            'status' => $request->validated()['value'] ? 'done' : 'missed',
             'notes' => $request->validated()['notes'] ?? null,
         ]);
 

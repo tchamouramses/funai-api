@@ -6,6 +6,8 @@ use App\Models\ListItem;
 use App\Models\ListModel;
 use App\Models\Profile;
 use App\Services\ExpoPushNotificationService;
+use App\Services\NotificationTranslationService;
+use App\Services\RecurringTaskService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +18,10 @@ class SendTaskDueNotificationsCommand extends Command
 
     protected $description = 'Send reminder and expired push notifications for pending tasks';
 
-    public function handle(ExpoPushNotificationService $expoPushNotificationService): int
+    public function handle(
+        ExpoPushNotificationService $expoPushNotificationService,
+        RecurringTaskService $recurringTaskService
+    ): int
     {
         $now = Carbon::now();
 
@@ -24,7 +29,8 @@ class SendTaskDueNotificationsCommand extends Command
             ->whereNotNull('due_date')
             ->where(function ($query) {
                 $query->whereNull('reminder_notified_at')
-                    ->orWhereNull('expired_notified_at');
+                    ->orWhereNull('expired_notified_at')
+                    ->orWhereNull('missed_processed_at');
             })
             ->get();
 
@@ -42,15 +48,7 @@ class SendTaskDueNotificationsCommand extends Command
 
                 $settings = (array) ($user->notification_settings ?? []);
                 $enabled = (bool) ($settings['enabled'] ?? true);
-                if (! $enabled) {
-                    continue;
-                }
-
                 $tokens = array_values(array_filter((array) ($settings['expo_push_tokens'] ?? [])));
-                if (empty($tokens)) {
-                    continue;
-                }
-
                 $defaultReminderDelay = (int) ($settings['default_reminder_delay'] ?? ($settings['default_reminder_time'] ?? 15));
                 if ($defaultReminderDelay < 0) {
                     $defaultReminderDelay = 0;
@@ -59,11 +57,22 @@ class SendTaskDueNotificationsCommand extends Command
                 $dueAt = Carbon::parse($item->due_date);
                 $reminderAt = (clone $dueAt)->subMinutes($defaultReminderDelay);
 
-                if (! $item->reminder_notified_at && $now->greaterThanOrEqualTo($reminderAt) && $now->lessThan($dueAt)) {
+                // Récupérer la locale de l'utilisateur (par défaut 'en')
+                $locale = $user->locale ?? 'en';
+
+                if (
+                    $enabled
+                    && ! empty($tokens)
+                    && ! $item->reminder_notified_at
+                    && $now->greaterThanOrEqualTo($reminderAt)
+                    && $now->lessThan($dueAt)
+                ) {
+                    $notification = NotificationTranslationService::getTaskReminderNotification($locale, $item->content);
+
                     $expoPushNotificationService->sendToTokens(
                         $tokens,
-                        'Rappel de tâche',
-                        'La tâche "'.$item->content.'" approche de son échéance.',
+                        $notification['title'],
+                        $notification['body'],
                         [
                             'type' => 'task_due_reminder',
                             'list_id' => (string) $list->id,
@@ -76,11 +85,13 @@ class SendTaskDueNotificationsCommand extends Command
                     $item->save();
                 }
 
-                if (! $item->expired_notified_at && $now->greaterThanOrEqualTo($dueAt)) {
+                if ($enabled && ! empty($tokens) && ! $item->expired_notified_at && $now->greaterThanOrEqualTo($dueAt)) {
+                    $notification = NotificationTranslationService::getTaskExpiredNotification($locale, $item->content);
+
                     $expoPushNotificationService->sendToTokens(
                         $tokens,
-                        'Tâche expirée',
-                        'La tâche "'.$item->content.'" est arrivée à expiration et n\'est pas terminée.',
+                        $notification['title'],
+                        $notification['body'],
                         [
                             'type' => 'task_due_expired',
                             'list_id' => (string) $list->id,
@@ -91,6 +102,20 @@ class SendTaskDueNotificationsCommand extends Command
 
                     $item->expired_notified_at = $now;
                     $item->save();
+                }
+
+                if (
+                    $now->greaterThanOrEqualTo($dueAt)
+                    && ! $item->completed
+                    && ! $item->missed_processed_at
+                    && $recurringTaskService->isRecurring($item, $list)
+                ) {
+                    $item->missed_at = $item->missed_at ?? $now;
+                    $item->missed_processed_at = $now;
+                    $item->save();
+
+                    $recurringTaskService->recordRecurrenceStatus($item, 'missed');
+                    $recurringTaskService->cloneNextOccurrenceIfNeeded($item, $list);
                 }
             } catch (\Throwable $throwable) {
                 Log::error('Error while sending due task notification', [
