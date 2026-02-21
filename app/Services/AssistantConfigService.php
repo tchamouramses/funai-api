@@ -771,6 +771,28 @@ TEXT,
             [
                 'type' => 'function',
                 'function' => [
+                    'name' => 'get_tasks_by_date',
+                    'description' => 'Récupère les tâches pour une date spécifiée (aujourd\'hui, demain, ou date spécifique)',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'dateType' => [
+                                'type' => 'string',
+                                'enum' => ['today', 'tomorrow', 'specific'],
+                                'description' => 'Type de date: "today" (aujourd\'hui), "tomorrow" (demain), ou "specific" (date spécifique)',
+                            ],
+                            'date' => [
+                                'type' => 'string',
+                                'description' => 'Date au format ISO (YYYY-MM-DD) - requis pour dateType="specific"',
+                            ],
+                        ],
+                        'required' => ['dateType'],
+                    ],
+                ],
+            ],
+            [
+                'type' => 'function',
+                'function' => [
                     'name' => 'navigate_to_list',
                     'description' => 'Navigue vers une liste spécifique',
                     'parameters' => [

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreMessageRequest extends FormRequest
+class StoreAssistantMessageRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -14,9 +14,8 @@ class StoreMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'conversation_id' => 'required|string',
             'role' => 'required|in:user,assistant',
-            'content' => 'nullable|string|min:1',
+            'content' => 'required|string|min:1',
         ];
     }
 }

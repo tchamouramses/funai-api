@@ -32,6 +32,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Assistant Routes
     Route::prefix('assistants')->group(function () {
         Route::post('/user', \App\Http\Controllers\Api\Assistant\GetOrCreateUserAssistantController::class);
+        Route::get('/chat/messages', \App\Http\Controllers\Api\Assistant\IndexChatAssistantMessageController::class);
+        Route::post('/chat/messages', \App\Http\Controllers\Api\Assistant\StoreChatAssistantMessageController::class);
     });
 
     Route::prefix('lists')->group(function () {
