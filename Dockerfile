@@ -1,10 +1,5 @@
 FROM php8.4-apache
 
-ARG MYSQL_DB_SERVER
-ARG MYSQL_DB_PORT
-ENV MYSQL_DB_HOST=${MYSQL_DB_SERVER}
-ENV MYSQL_DB_PORT=${MYSQL_DB_PORT}
-
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -29,7 +24,6 @@ RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 80
 CMD sh -c "echo 'Waiting for database...'; \
-    until nc -z -v -w30 $ID_SERVER_DB_HOST $ID_SERVER_DB_PORT; do sleep 5; done; \
     echo 'Database is up!'; \
     php artisan migrate --force; \
     php artisan storage:link; \
