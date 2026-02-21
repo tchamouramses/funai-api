@@ -1,0 +1,56 @@
+pipeline {
+    agent any
+
+    environment {
+        WORKDIR = 'workspace'
+    }
+
+    stages {
+        stage('Prepare configs...') {
+            steps {
+                script {
+                    sh '''
+                    cp .env.prod .env
+                    cp deploiement/production/docker-compose.prod.yml docker-compose.yml
+                    '''
+
+                    def bparams = [
+                        '<funai_app_key>': "${env.funai_app_key}",
+                        '<funai_mysql_database>': "${env.funai_mysql_database}",
+                        '<funai_mysql_username>': "${env.funai_mysql_username}",
+                        '<funai_mysql_password>': "${env.funai_mysql_password}",
+                        '<funai_openai_api_key>': "${env.funai_openai_api_key}",
+                        '<funai_mongodb_username>': "${env.funai_mongodb_username}",
+                        '<funai_mongodb_password>': "${env.funai_mongodb_password}",
+                        '<funai_mysql_root_password>': "${env.funai_mysql_root_password}",
+                    ]
+
+                    bparams.each { key, value ->
+                        sh "sed -i 's|${key}|${value}|g' .env docker-compose.yml"
+                    }
+                }
+            }
+        }
+
+        stage('Build modules and deploy services') {
+            steps {
+                sh 'docker compose up -d --build'
+            }
+        }
+
+        stage('Post-build cleanup') {
+            steps {
+                sh 'rm -rf ${WORKDIR}'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}

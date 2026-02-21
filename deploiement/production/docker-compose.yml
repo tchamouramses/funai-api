@@ -1,0 +1,48 @@
+services:
+  funai-api:
+    conainer_name: funai-api
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MYSQL_DB_SERVER: funai-db-mysql
+        MONGO_DB_SERVER: funai-db-mongodb
+        MYSQL_DB_PORT: 3306
+        MONGO_DB_PORT: 27017
+    ports:
+      - "8001:80"
+    depends_on:
+      - funai-db-mysql
+      - funai-db-mongodb
+    volumes:
+      - funai_storage:/var/www/html/public/storage
+  funai-db-mysql:
+    container_name: funai-db-mysql
+    restart: always
+    image: mysql:lts
+    environment:
+      MYSQL_ROOT_PASSWORD: <funai_mysql_root_password>
+      MYSQL_DATABASE: <funai_mysql_database>
+      MYSQL_USER: <funai_mysql_username>
+      MYSQL_PASSWORD: <funai_mysql_password>
+    ports:
+      - "3306:3306"
+    volumes:
+      - funai_mysql_data:/var/lib/mysql
+  funai-db-mongodb:
+    container_name: funai-db-mongodb
+    restart: always
+    image: mongo:lts
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: <funai_mongodb_password>
+      MONGO_INITDB_DATABASE: <funai_mongodb_username>
+    ports:
+      - "27017:27017"
+    volumes:
+      - funai_mongo_data:/data/db
+volumes:
+  funai_storage:
+  funai_mysql_data:
+  funai_mongo_data:
