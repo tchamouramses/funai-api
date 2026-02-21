@@ -18,8 +18,19 @@ class UpdateController extends Controller
             throw new ResourceNotFoundException('Item not found');
         }
 
+        $validated = $request->validated();
         $wasCompleted = $item->completed;
-        $item->update($request->validated());
+
+        if (array_key_exists('due_date', $validated)) {
+            $validated['reminder_notified_at'] = null;
+            $validated['expired_notified_at'] = null;
+        }
+
+        if (array_key_exists('completed', $validated) && $validated['completed'] === false) {
+            $validated['expired_notified_at'] = null;
+        }
+
+        $item->update($validated);
 
         if (! $wasCompleted && $item->completed) {
             $list = $item->list;

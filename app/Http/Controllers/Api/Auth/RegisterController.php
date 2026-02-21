@@ -28,7 +28,11 @@ class RegisterController extends Controller
         Profile::create([
             'email' => $user->email,
             'full_name' => $user->name,
-            'notification_settings' => [],
+            'notification_settings' => [
+                'enabled' => true,
+                'default_reminder_delay' => 15,
+                'expo_push_tokens' => [],
+            ],
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;

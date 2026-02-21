@@ -20,6 +20,8 @@ class ListItem extends Model
         'metadata',
         'task_day',
         'due_date',
+        'reminder_notified_at',
+        'expired_notified_at',
     ];
 
     protected $casts = [
@@ -28,6 +30,8 @@ class ListItem extends Model
         'due_date' => 'datetime',
         'metadata' => 'array',
         'completed' => 'boolean',
+        'reminder_notified_at' => 'datetime',
+        'expired_notified_at' => 'datetime',
     ];
 
     public function list()

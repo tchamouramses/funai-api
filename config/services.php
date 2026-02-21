@@ -39,4 +39,8 @@ return [
         'api_key' => env('OPENAI_API_KEY'),
     ],
 
+    'expo' => [
+        'access_token' => env('EXPO_ACCESS_TOKEN'),
+    ],
+
 ];

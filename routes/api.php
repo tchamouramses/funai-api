@@ -11,6 +11,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', \App\Http\Controllers\Api\Auth\LogoutController::class);
     Route::post('/auth/refresh', \App\Http\Controllers\Api\Auth\RefreshController::class);
     Route::get('/auth/me', \App\Http\Controllers\Api\Auth\MeController::class);
+    Route::put('/auth/notification-settings', \App\Http\Controllers\Api\Auth\UpdateNotificationSettingsController::class);
+    Route::post('/auth/push-token', [\App\Http\Controllers\Api\Auth\PushTokenController::class, 'store']);
+    Route::delete('/auth/push-token', [\App\Http\Controllers\Api\Auth\PushTokenController::class, 'destroy']);
 
     // Conversation Routes
     Route::prefix('conversations')->group(function () {

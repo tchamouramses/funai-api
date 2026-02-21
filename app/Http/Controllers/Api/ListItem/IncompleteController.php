@@ -18,7 +18,10 @@ class IncompleteController extends Controller
         }
 
         if ($item->completed) {
-            $item->update(['completed' => false]);
+            $item->update([
+                'completed' => false,
+                'expired_notified_at' => null,
+            ]);
             $item->list->decrement('total_completed_count');
         }
 
