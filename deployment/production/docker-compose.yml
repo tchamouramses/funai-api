@@ -1,6 +1,6 @@
 services:
   funai-api:
-    conainer_name: funai-api
+    container_name: funai-api
     restart: always
     build:
       context: .
