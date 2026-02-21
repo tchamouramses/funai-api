@@ -12,6 +12,9 @@ RUN sed -i "s|/var/www/html|${APACHE_DOCUMENT_ROOT}|g" /etc/apache2/sites-availa
     a2enmod rewrite && \
     rm -rf /var/lib/apt/lists/*
 
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y nodejs
+
 RUN pecl install mongodb \
     && docker-php-ext-enable mongodb
 
@@ -21,6 +24,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY . .
 
 RUN composer install --no-interaction --no-dev --prefer-dist
+
+RUN npm install --force
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
