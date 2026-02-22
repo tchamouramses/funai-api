@@ -38,6 +38,7 @@ class RegisterController extends Controller
                 'default_reminder_delay' => 15,
                 'expo_push_tokens' => [],
             ],
+            'user_id' => (string) $user->id,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;

@@ -12,6 +12,7 @@ use App\Services\ExpoPushNotificationService;
 use App\Services\NotificationTranslationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use App\Models\User;
 
 class StoreController extends Controller
 {
@@ -29,11 +30,6 @@ class StoreController extends Controller
         $item->save();
         $list->increment('total_item_count');
 
-        // Envoyer push notification à l'utilisateur
-        Log::info('Sending item created notification', [
-                'list' => $list,
-                'item' => $item
-            ]);
         $this->sendItemCreatedNotification($list, $item);
 
         return response()->json([
@@ -46,7 +42,8 @@ class StoreController extends Controller
     {
         try {
             // Récupérer le profil de l'utilisateur
-            $profile = Profile::where('_id', $list->user_id)->first();
+            $user = User::find($list->user_id);
+            $profile = Profile::where('email', $user->email)->first();
             if (! $profile) {
                 return;
             }
@@ -54,7 +51,7 @@ class StoreController extends Controller
             $tokens = (array) ($profile->notification_settings['expo_push_tokens'] ?? []);
             Log::info('Sending item created notification', [
                 'profile' => $profile,
-                'tokens' => $profile->notification_settings
+                'tokens' => $tokens,
             ]);
             if (empty($tokens)) {
                 return;

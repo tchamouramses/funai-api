@@ -19,6 +19,7 @@ class PushTokenController extends Controller
                 'email' => $user->email,
                 'full_name' => $user->name,
                 'notification_settings' => [],
+                'user_id' => (string) $user->id,
             ]);
         }
 
