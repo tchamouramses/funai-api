@@ -49,17 +49,14 @@ class StoreController extends Controller
             }
 
             $tokens = (array) ($profile->notification_settings['expo_push_tokens'] ?? []);
-            Log::info('Sending item created notification', [
-                'profile' => $profile,
-                'tokens' => $tokens,
-            ]);
+
             if (empty($tokens)) {
                 return;
             }
 
 
             // Récupérer la locale de l'utilisateur (par défaut 'en')
-            $locale = $profile->locale ?? 'en';
+            $locale = $user->locale ?? 'en';
 
             // Obtenir le titre et le corps traduits
             $notification = NotificationTranslationService::getTaskCreatedNotification(
@@ -74,8 +71,8 @@ class StoreController extends Controller
                 $notification['body'],
                 [
                     'type' => 'item_created',
-                    'itemId' => (string) $item->_id,
-                    'listId' => (string) $list->_id,
+                    'itemId' => (string) $item->id,
+                    'listId' => (string) $list->id,
                     'listTitle' => $list->title,
                 ]
             );
