@@ -11,6 +11,7 @@ use App\Models\Profile;
 use App\Services\ExpoPushNotificationService;
 use App\Services\NotificationTranslationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class StoreController extends Controller
 {
@@ -47,9 +48,14 @@ class StoreController extends Controller
             }
 
             $tokens = (array) ($profile->notification_settings['expo_push_tokens'] ?? []);
+            Log::info('Sending item created notification', [
+                'profile' => $profile,
+                'tokens' => $profile->notification_settings
+            ]);
             if (empty($tokens)) {
                 return;
             }
+
 
             // Récupérer la locale de l'utilisateur (par défaut 'en')
             $locale = $profile->locale ?? 'en';
