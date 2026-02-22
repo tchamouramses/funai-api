@@ -30,6 +30,10 @@ class StoreController extends Controller
         $list->increment('total_item_count');
 
         // Envoyer push notification à l'utilisateur
+        Log::info('Sending item created notification', [
+                'profile' => $profile,
+                'item' => $item
+            ]);
         $this->sendItemCreatedNotification($list, $item);
 
         return response()->json([
