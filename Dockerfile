@@ -26,6 +26,7 @@ COPY . .
 RUN composer install --no-interaction --no-dev --prefer-dist
 
 RUN npm install --force
+RUN npm run build
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache

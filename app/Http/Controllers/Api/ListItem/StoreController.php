@@ -31,7 +31,7 @@ class StoreController extends Controller
 
         // Envoyer push notification à l'utilisateur
         Log::info('Sending item created notification', [
-                'profile' => $profile,
+                'list' => $list,
                 'item' => $item
             ]);
         $this->sendItemCreatedNotification($list, $item);
