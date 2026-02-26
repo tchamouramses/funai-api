@@ -30,6 +30,9 @@ class DestroyChallengeController extends Controller
 
         $list->update(['metadata' => $metadata]);
 
-        return response()->json(['message' => 'Challenge removed successfully'], 200);
+        return response()->json([
+            'data' => null,
+            'message' => 'Challenge removed successfully',
+        ], 200);
     }
 }
