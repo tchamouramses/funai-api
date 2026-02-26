@@ -15,8 +15,7 @@ class StoreListRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:255',
-            'type' => 'required|string|in:general,professionnel,educatif,sportif,sante,creatif,voyage,cuisine,finance',
-            'list_category' => 'required|string|in:tasks,projects,study,workout,wellness,creative,travel,meal,budget',
+            'type' => 'required|string|in:todo,fitness,nutrition,finance',
             'description' => 'nullable|string|max:1000',
             'metadata' => 'nullable|array',
             'parent_list_id' => 'nullable|string',

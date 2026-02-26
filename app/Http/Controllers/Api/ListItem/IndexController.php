@@ -17,7 +17,7 @@ class IndexController extends Controller
 
         $items->getCollection()->transform(function ($item) {
             $seriesId = $item->series_id ?: (string) $item->id;
-            $entries = ProgressEntry::where('series_id', $seriesId)->get();
+            $entries = ProgressEntry::where('series_id', $seriesId)->latest()->get();
 
             $item->recurrence_summary = [
                 'done_days' => $entries->where('status', 'done')->count(),

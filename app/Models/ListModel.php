@@ -14,7 +14,6 @@ class ListModel extends Model
         'user_id',
         'title',
         'type',
-        'list_category',
         'description',
         'metadata',
         'pinned',

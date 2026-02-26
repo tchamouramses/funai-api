@@ -22,7 +22,6 @@ class DuplicateController extends Controller
             'user_id' => $original->user_id,
             'title' => $request->validated()['title'],
             'type' => $original->type,
-            'list_category' => $original->list_category,
             'description' => $original->description,
             'metadata' => $original->metadata,
             'depth' => 0,
