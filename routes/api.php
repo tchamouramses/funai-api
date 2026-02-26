@@ -63,4 +63,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/complete', \App\Http\Controllers\Api\ListItem\CompleteController::class);
         Route::post('/{id}/incomplete', \App\Http\Controllers\Api\ListItem\IncompleteController::class);
     });
+
+    // Fitness Routes
+    Route::prefix('fitness')->group(function () {
+        Route::post('/generate-program', \App\Http\Controllers\Api\Fitness\GenerateProgramController::class);
+        Route::post('/{listId}/profile', \App\Http\Controllers\Api\Fitness\SaveProfileController::class);
+        Route::get('/{listId}/dashboard', \App\Http\Controllers\Api\Fitness\DashboardController::class);
+        Route::get('/challenge-templates', \App\Http\Controllers\Api\Fitness\ChallengeTemplatesController::class);
+        Route::get('/{listId}/challenges', \App\Http\Controllers\Api\Fitness\IndexChallengesController::class);
+        Route::post('/{listId}/challenges', \App\Http\Controllers\Api\Fitness\StoreChallengeController::class);
+        Route::delete('/{listId}/challenges/{challengeId}', \App\Http\Controllers\Api\Fitness\DestroyChallengeController::class);
+    });
 });

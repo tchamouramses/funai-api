@@ -11,3 +11,7 @@ Artisan::command('inspire', function () {
 Schedule::command('tasks:send-due-notifications')->everyMinute()
     ->withoutOverlapping()
     ->runInBackground();
+
+Schedule::command('fitness:weekly-summary')->weeklyOn(1, '08:00')
+    ->withoutOverlapping()
+    ->runInBackground();
