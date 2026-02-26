@@ -25,7 +25,7 @@ class SendWeeklyFitnessSummaryCommand extends Command
         $this->info('Starting weekly fitness summary generation...');
 
         // Get all root fitness lists (no parent)
-        $fitnessLists = ListModel::where('type', 'sportif')
+        $fitnessLists = ListModel::where('type', 'fitness')
             ->whereNull('parent_list_id')
             ->whereNotNull('metadata.fitnessProfile')
             ->where('metadata.setupCompleted', true)

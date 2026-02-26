@@ -6,6 +6,7 @@ use App\Models\ListItem;
 use App\Models\ListModel;
 use App\Models\ProgressEntry;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class RecurringTaskService
 {
@@ -64,6 +65,7 @@ class RecurringTaskService
         $list = $list ?? $item->list;
 
         if (! $this->isRecurring($item, $list) || ! $item->due_date) {
+            Log::error("", [$item, $list]);
             return null;
         }
 
