@@ -96,27 +96,34 @@ class RecurringTaskService
         $startDate = Carbon::parse($schedule['startDate'] ?? null);
         $currentDueDate = Carbon::parse($item->due_date);
         $daysOfWeek = (array) ($schedule['daysOfWeek'] ?? []);
-        if(isset($schedule['weeksCount'])){
+
+        if (isset($schedule['weeksCount'])) {
             $seriesId = $this->ensureSeriesId($item);
             $occurrenceCount = ListItem::where('series_id', $seriesId)->count();
-            if($occurrenceCount >= (int) $schedule['weeksCount'] * count($daysOfWeek)){
+            if ($occurrenceCount >= (int) $schedule['weeksCount'] * count($daysOfWeek)) {
                 return null;
             }
         }
 
         $currentDayOfWeek = $currentDueDate->dayOfWeek;
+        $currentDayOfWeekIndex = array_search($currentDayOfWeek, $daysOfWeek, true);
 
-        $currendDayOfWeekIndex = array_search($currentDayOfWeek, $daysOfWeek, true);
-
-        if($currendDayOfWeekIndex === false) {
+        if ($currentDayOfWeekIndex === false) {
             return null;
         }
 
-        $nexDayIndex = ($currendDayOfWeekIndex + 1) % count($daysOfWeek);
-        $nextDayOfWeek = (int) $daysOfWeek[$nexDayIndex];
-        $nextDueDate = $currentDueDate->copy()->addDays(($nextDayOfWeek - $currentDayOfWeek + 7) % 7);
+        $nextDayIndex = ($currentDayOfWeekIndex + 1) % count($daysOfWeek);
+        $nextDayOfWeek = (int) $daysOfWeek[$nextDayIndex];
+        $daysToAdd = ($nextDayOfWeek - $currentDayOfWeek + 7) % 7;
 
-        if(isset($schedule['endDate']) && (Carbon::parse($schedule['endDate'])->isPast() || $nextDueDate->greaterThan(Carbon::parse($schedule['endDate'])))){
+        // When single day or wrapping back to same day, advance a full week
+        if ($daysToAdd === 0) {
+            $daysToAdd = 7;
+        }
+
+        $nextDueDate = $currentDueDate->copy()->addDays($daysToAdd);
+
+        if (isset($schedule['endDate']) && (Carbon::parse($schedule['endDate'])->isPast() || $nextDueDate->greaterThan(Carbon::parse($schedule['endDate'])))) {
             return null;
         }
 
@@ -125,5 +132,4 @@ class RecurringTaskService
 
         return $nextDueDate;
     }
-
 }

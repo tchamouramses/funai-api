@@ -22,6 +22,7 @@ class CompleteController extends Controller
             $item->update([
                 'completed' => true,
                 'missed_at' => null,
+                'completed_at' => now(),
             ]);
 
             $item->list?->increment('total_completed_count');

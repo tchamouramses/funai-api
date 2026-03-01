@@ -23,6 +23,7 @@ class ListItem extends Model
         'expired_notified_at',
         'missed_at',
         'missed_processed_at',
+        'completed_at'
     ];
 
     protected $casts = [
@@ -36,6 +37,7 @@ class ListItem extends Model
         'expired_notified_at' => 'datetime',
         'missed_at' => 'datetime',
         'missed_processed_at' => 'datetime',
+        'completed_at' => 'datetime',
     ];
 
     public function list()

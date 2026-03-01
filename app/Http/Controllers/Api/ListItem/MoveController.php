@@ -27,7 +27,7 @@ class MoveController extends Controller
 
         $oldList = $item->list;
 
-        $item->update(['list_id' => $newList->_id]);
+        $item->update(['list_id' => (string) $newList->_id]);
 
         $oldList->decrement('total_item_count');
         if ($item->completed) {

@@ -70,7 +70,7 @@ class GenerateProgramController extends Controller
                     'metadata' => [
                         'flowType' => 'fitness',
                     ],
-                    'parent_list_id' => $list->_id,
+                    'parent_list_id' => (string) $list->_id,
                     'depth' => ($list->depth ?? 0) + 1,
                     'children_count' => 0,
                     'total_item_count' => 0,
@@ -100,7 +100,7 @@ class GenerateProgramController extends Controller
                     }
 
                     $item = ListItem::create([
-                        'list_id' => $subList->_id,
+                        'list_id' => (string) $subList->_id,
                         'content' => $exercise['content'],
                         'completed' => false,
                         'order' => $exerciseIndex,

@@ -34,6 +34,7 @@ class UpdateController extends Controller
         if (array_key_exists('completed', $validated) && $validated['completed'] === false) {
             $validated['expired_notified_at'] = null;
             $validated['missed_at'] = null;
+            $validated['completed_at'] = null;
         }
 
         $markAsCompleted = array_key_exists('completed', $validated)
@@ -49,6 +50,7 @@ class UpdateController extends Controller
         if ($markAsCompleted) {
             $item->update([
                 'completed' => true,
+                'completed_at' => now(),
                 'missed_at' => null,
             ]);
 

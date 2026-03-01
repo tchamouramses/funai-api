@@ -162,7 +162,7 @@ class SendWeeklyFitnessSummaryCommand extends Command
 
         foreach ($childLists as $child) {
             $hasCompleted = $allItems
-                ->where('list_id', $child->_id)
+                ->where('list_id', (string) $child->_id)
                 ->filter(fn ($item) => $item->completed && Carbon::parse($item->updated_at)->gte($weekStart))
                 ->isNotEmpty();
 

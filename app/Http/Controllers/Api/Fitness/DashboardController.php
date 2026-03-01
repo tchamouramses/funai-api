@@ -24,9 +24,11 @@ class DashboardController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $subListIds = ListModel::where('parent_list_id', $list->_id)
+        $subListIds = ListModel::where('parent_list_id', $listId)
             ->pluck('_id')
+            ->map(fn ($id) => (string) $id)
             ->toArray();
+        array_push($subListIds, $listId); // Include main list items as well
 
         $allItems = ListItem::whereIn('list_id', $subListIds)->get();
 
@@ -123,6 +125,7 @@ class DashboardController extends Controller
     {
         return $completedItems
             ->pluck('list_id')
+            ->map(fn ($id) => (string) $id)
             ->unique()
             ->intersect($subListIds)
             ->count();
@@ -264,7 +267,7 @@ class DashboardController extends Controller
      */
     private function buildExerciseProgress($items): array
     {
-        $itemIds = $items->pluck('_id')->toArray();
+        $itemIds = $items->pluck('_id')->map(fn ($id) => (string) $id)->toArray();
 
         if (empty($itemIds)) {
             return [];
