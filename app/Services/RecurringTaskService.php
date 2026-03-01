@@ -3,10 +3,8 @@
 namespace App\Services;
 
 use App\Models\ListItem;
-use App\Models\ListModel;
 use App\Models\ProgressEntry;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 class RecurringTaskService
 {
@@ -78,11 +76,9 @@ class RecurringTaskService
             'completed' => false,
             'order' => $item->order,
             'notification_time' => $item->notification_time,
-            'notification_id' => null,
             'metadata' => $item->metadata,
             'due_date' => $nextDueDate,
             'series_id' => $seriesId,
-            'source_item_id' => (string) $item->id,
             'reminder_notified_at' => null,
             'expired_notified_at' => null,
             'missed_at' => null,
