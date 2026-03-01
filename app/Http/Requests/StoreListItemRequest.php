@@ -22,6 +22,7 @@ class StoreListItemRequest extends FormRequest
             'due_date' => 'nullable|date',
             'notification_time' => 'nullable|integer|min:0',
             'metadata' => 'nullable|array',
+            // 'metadata.daysOfWeek' => 'required|array',
         ];
     }
 }

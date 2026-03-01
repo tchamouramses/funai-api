@@ -56,7 +56,7 @@ class UpdateController extends Controller
             $list?->increment('total_completed_count');
 
             $recurringTaskService->recordRecurrenceStatus($item, 'done');
-            $recurringTaskService->cloneNextOccurrenceIfNeeded($item, $list);
+            $recurringTaskService->cloneNextOccurrenceIfPossible($item, $list);
         } elseif ($wasCompleted && ! $item->completed) {
             $list = $item->list;
             $list?->decrement('total_completed_count');

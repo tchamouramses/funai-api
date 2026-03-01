@@ -115,7 +115,7 @@ class SendTaskDueNotificationsCommand extends Command
                     $item->save();
 
                     $recurringTaskService->recordRecurrenceStatus($item, 'missed');
-                    $recurringTaskService->cloneNextOccurrenceIfNeeded($item, $list);
+                    $recurringTaskService->cloneNextOccurrenceIfPossible($item, $list);
                 }
             } catch (\Throwable $throwable) {
                 Log::error('Error while sending due task notification', [

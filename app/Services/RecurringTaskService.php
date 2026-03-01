@@ -10,15 +10,10 @@ use Illuminate\Support\Facades\Log;
 
 class RecurringTaskService
 {
-    public function isRecurring(ListItem $item, ?ListModel $list = null): bool
+    public function isRecurring(ListItem $item): bool
     {
-        $list = $list ?? $item->list;
-        $metadata = (array) ($item->metadata ?? []);
-
-        return (bool) ($list?->is_recurring)
-            || (bool) ($metadata['is_recurring'] ?? false)
-            || ! empty($metadata['recurrence_pattern'])
-            || $item->task_day !== null;
+        $nextDueDate = $this->calculateNextDueDateForSchedule($item);
+        return $nextDueDate instanceof Carbon;
     }
 
     public function ensureSeriesId(ListItem $item): string
@@ -60,26 +55,17 @@ class RecurringTaskService
             });
     }
 
-    public function cloneNextOccurrenceIfNeeded(ListItem $item, ?ListModel $list = null): ?ListItem
+    public function cloneNextOccurrenceIfPossible(ListItem $item): ?ListItem
     {
-        $list = $list ?? $item->list;
-
-        if (! $this->isRecurring($item, $list) || ! $item->due_date) {
-            Log::error("", [$item, $list]);
+        $seriesId = $this->ensureSeriesId($item);
+        $nextDueDate = $this->calculateNextDueDateForSchedule($item);
+        if (! isset($nextDueDate)) {
             return null;
         }
 
-        $seriesId = $this->ensureSeriesId($item);
-        $currentDueDate = Carbon::parse($item->due_date);
-        $nextDueDate = $this->calculateNextDueDate($currentDueDate, $item, $list);
-
-        $nextStart = $nextDueDate->copy()->startOfDay();
-        $nextEnd = $nextDueDate->copy()->endOfDay();
-
-        $existing = ListItem::where('series_id', $seriesId)
+        $existing = ListItem::where('series_id', $item->series_id)
             ->where('completed', false)
-            ->where('due_date', '>=', $nextStart)
-            ->where('due_date', '<=', $nextEnd)
+            ->where('due_date', '>=', $nextDueDate)
             ->first();
 
         if ($existing) {
@@ -94,7 +80,6 @@ class RecurringTaskService
             'notification_time' => $item->notification_time,
             'notification_id' => null,
             'metadata' => $item->metadata,
-            'task_day' => $item->task_day,
             'due_date' => $nextDueDate,
             'series_id' => $seriesId,
             'source_item_id' => (string) $item->id,
@@ -105,36 +90,44 @@ class RecurringTaskService
         ]);
     }
 
-    public function calculateNextDueDate(Carbon $fromDueDate, ListItem $item, ?ListModel $list = null): Carbon
+    public function calculateNextDueDateForSchedule(ListItem $item): ?Carbon
     {
-        $pattern = $this->resolvePattern($item, $list ?? $item->list);
-        $frequency = $pattern['frequency'] ?? 'daily';
-        $interval = max(1, (int) ($pattern['interval'] ?? 1));
-
-        $next = $fromDueDate->copy();
-
-        return match ($frequency) {
-            'weekly' => $next->addWeeks($interval),
-            'monthly' => $next->addMonths($interval),
-            default => $next->addDays($interval),
-        };
-    }
-
-    private function resolvePattern(ListItem $item, ?ListModel $list = null): array
-    {
-        $metadata = (array) ($item->metadata ?? []);
-        $itemPattern = (array) ($metadata['recurrence_pattern'] ?? []);
-        $listPattern = (array) ($list?->recurrence_pattern ?? []);
-
-        $pattern = ! empty($itemPattern) ? $itemPattern : $listPattern;
-
-        if (empty($pattern)) {
-            $pattern = [
-                'frequency' => 'daily',
-                'interval' => 1,
-            ];
+        if (empty((array) ($item->metadata['schedule'] ?? [])) || ! isset($item->due_date)) {
+            return null;
         }
 
-        return $pattern;
+        $schedule = (array) $item->metadata['schedule'];
+        $startDate = Carbon::parse($schedule['startDate'] ?? null);
+        $currentDueDate = Carbon::parse($item->due_date);
+        $daysOfWeek = (array) ($schedule['daysOfWeek'] ?? []);
+        if(isset($schedule['weeksCount'])){
+            $seriesId = $this->ensureSeriesId($item);
+            $occurrenceCount = ListItem::where('series_id', $seriesId)->count();
+            if($occurrenceCount >= (int) $schedule['weeksCount'] * count($daysOfWeek)){
+                return null;
+            }
+        }
+
+        $currentDayOfWeek = $currentDueDate->dayOfWeek;
+
+        $currendDayOfWeekIndex = array_search($currentDayOfWeek, $daysOfWeek, true);
+
+        if($currendDayOfWeekIndex === false) {
+            return null;
+        }
+
+        $nexDayIndex = ($currendDayOfWeekIndex + 1) % count($daysOfWeek);
+        $nextDayOfWeek = (int) $daysOfWeek[$nexDayIndex];
+        $nextDueDate = $currentDueDate->copy()->addDays(($nextDayOfWeek - $currentDayOfWeek + 7) % 7);
+
+        if(isset($schedule['endDate']) && (Carbon::parse($schedule['endDate'])->isPast() || $nextDueDate->greaterThan(Carbon::parse($schedule['endDate'])))){
+            return null;
+        }
+
+        $nextDueDate->setHour($startDate->hour);
+        $nextDueDate->setMinute($startDate->minute);
+
+        return $nextDueDate;
     }
+
 }

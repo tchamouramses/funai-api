@@ -26,20 +26,14 @@ class ListItem extends Model
         'expired_notified_at',
         'missed_at',
         'missed_processed_at',
-        'is_recurring',
-        'recurrence_pattern',
-        'recurrence_start_date',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'due_date' => 'datetime',
-        'recurrence_start_date' => 'datetime',
         'metadata' => 'array',
-        'recurrence_pattern' => 'array',
         'completed' => 'boolean',
-        'is_recurring' => 'boolean',
         'series_id' => 'string',
         'source_item_id' => 'string',
         'reminder_notified_at' => 'datetime',

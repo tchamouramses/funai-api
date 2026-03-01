@@ -27,7 +27,7 @@ class CompleteController extends Controller
             $item->list?->increment('total_completed_count');
 
             $recurringTaskService->recordRecurrenceStatus($item, 'done');
-            $recurringTaskService->cloneNextOccurrenceIfNeeded($item, $item->list);
+            $recurringTaskService->cloneNextOccurrenceIfPossible($item, $item->list);
         }
 
         return response()->json([
