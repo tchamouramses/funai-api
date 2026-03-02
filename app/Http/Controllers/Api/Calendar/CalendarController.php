@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api\Calendar;
 
 use App\Http\Controllers\Controller;
+use App\Models\Budget;
 use App\Models\ListItem;
 use App\Models\ListModel;
+use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -86,6 +88,92 @@ class CalendarController extends Controller
                 'completed' => $item->completed,
                 'metadata' => $item->metadata,
             ];
+        }
+
+        // ─── Transactions from finance lists ─────────────────────
+        $financeListIds = collect($listMap)
+            ->filter(fn($info) => $info['type'] === 'finance')
+            ->keys()
+            ->toArray();
+
+        if (!empty($financeListIds)) {
+            $transactions = Transaction::where('user_id', $userId)
+                ->whereIn('list_id', $financeListIds)
+                ->whereBetween('date', [$startDate, $endDate])
+                ->orderBy('date', 'asc')
+                ->get();
+
+            foreach ($transactions as $tx) {
+                $date = Carbon::parse($tx->date)->toDateString();
+                $txListId = (string) $tx->list_id;
+                $txListInfo = $listMap[$txListId] ?? null;
+
+                $sign = $tx->type === 'income' ? '+' : '-';
+                $grouped[$date][] = [
+                    'id' => 'tx_' . (string) $tx->_id,
+                    'content' => $sign . ' ' . number_format($tx->amount, 0, ',', ' ') . ' ' . ($tx->currency ?? 'XAF') . ' • ' . $tx->category,
+                    'dueDate' => $date,
+                    'listId' => $txListId,
+                    'listTitle' => $txListInfo ? $txListInfo['title'] : 'Unknown',
+                    'flowType' => 'finance',
+                    'completed' => false,
+                    'metadata' => [
+                        'calendarItemType' => 'transaction',
+                        'transactionType' => $tx->type,
+                        'amount' => $tx->amount,
+                        'currency' => $tx->currency,
+                        'category' => $tx->category,
+                        'status' => $tx->status,
+                    ],
+                ];
+            }
+
+            // ─── Budgets from finance lists ─────────────────────
+            $budgets = Budget::where('user_id', $userId)
+                ->whereIn('list_id', $financeListIds)
+                ->where('is_active', true)
+                ->where(function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('start_date', [$startDate, $endDate])
+                          ->orWhereBetween('end_date', [$startDate, $endDate]);
+                })
+                ->get();
+
+            foreach ($budgets as $budget) {
+                $date = Carbon::parse($budget->start_date)->toDateString();
+                $budgetListId = (string) $budget->list_id;
+                $budgetListInfo = $listMap[$budgetListId] ?? null;
+
+                // Compute spent from related expense transactions
+                $spent = Transaction::where('list_id', $budgetListId)
+                    ->where('type', 'expense')
+                    ->where('category', $budget->category)
+                    ->whereBetween('date', [
+                        Carbon::parse($budget->start_date)->startOfDay(),
+                        Carbon::parse($budget->end_date)->endOfDay(),
+                    ])
+                    ->sum('amount');
+
+                $grouped[$date][] = [
+                    'id' => 'bg_' . (string) $budget->_id,
+                    'content' => '📊 ' . $budget->name . ' • ' . number_format($budget->amount, 0, ',', ' ') . ' ' . ($budget->currency ?? 'XAF'),
+                    'dueDate' => $date,
+                    'listId' => $budgetListId,
+                    'listTitle' => $budgetListInfo ? $budgetListInfo['title'] : 'Unknown',
+                    'flowType' => 'finance',
+                    'completed' => false,
+                    'metadata' => [
+                        'calendarItemType' => 'budget',
+                        'name' => $budget->name,
+                        'amount' => $budget->amount,
+                        'spent' => $spent,
+                        'remaining' => max(0, $budget->amount - $spent),
+                        'percentage' => $budget->amount > 0 ? round(($spent / $budget->amount) * 100) : 0,
+                        'currency' => $budget->currency,
+                        'period' => $budget->period,
+                        'category' => $budget->category,
+                    ],
+                ];
+            }
         }
 
         return response()->json([
