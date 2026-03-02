@@ -15,3 +15,7 @@ Schedule::command('tasks:send-due-notifications')->everyMinute()
 Schedule::command('fitness:weekly-summary')->weeklyOn(1, '08:00')
     ->withoutOverlapping()
     ->runInBackground();
+
+Schedule::job(new \App\Jobs\RenewExpiredBudgets)->dailyAt('00:05')
+    ->withoutOverlapping()
+    ->runInBackground();

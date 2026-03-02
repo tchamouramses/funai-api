@@ -74,4 +74,42 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{listId}/challenges', \App\Http\Controllers\Api\Fitness\StoreChallengeController::class);
         Route::delete('/{listId}/challenges/{challengeId}', \App\Http\Controllers\Api\Fitness\DestroyChallengeController::class);
     });
+
+    // Finance Routes
+    Route::prefix('finance')->group(function () {
+        // Defaults & profile
+        Route::get('/defaults', \App\Http\Controllers\Api\Finance\DefaultsController::class);
+        Route::post('/{listId}/profile', \App\Http\Controllers\Api\Finance\SaveProfileController::class);
+
+        // Dashboard
+        Route::get('/{listId}/dashboard', \App\Http\Controllers\Api\Finance\FinanceDashboardController::class);
+
+        // Transactions
+        Route::prefix('transactions')->group(function () {
+            Route::post('/', \App\Http\Controllers\Api\Finance\StoreTransactionController::class);
+            Route::get('/', \App\Http\Controllers\Api\Finance\IndexTransactionController::class);
+            Route::get('/{id}', \App\Http\Controllers\Api\Finance\ShowTransactionController::class);
+            Route::put('/{id}', \App\Http\Controllers\Api\Finance\UpdateTransactionController::class);
+            Route::delete('/{id}', \App\Http\Controllers\Api\Finance\DestroyTransactionController::class);
+        });
+
+        // Budgets
+        Route::prefix('budgets')->group(function () {
+            Route::post('/', \App\Http\Controllers\Api\Finance\StoreBudgetController::class);
+            Route::get('/', \App\Http\Controllers\Api\Finance\IndexBudgetController::class);
+            Route::put('/{id}', \App\Http\Controllers\Api\Finance\UpdateBudgetController::class);
+            Route::delete('/{id}', \App\Http\Controllers\Api\Finance\DestroyBudgetController::class);
+        });
+
+        // Categories
+        Route::prefix('categories')->group(function () {
+            Route::get('/', \App\Http\Controllers\Api\Finance\IndexCategoryController::class);
+            Route::post('/', \App\Http\Controllers\Api\Finance\StoreCategoryController::class);
+            Route::delete('/{id}', \App\Http\Controllers\Api\Finance\DestroyCategoryController::class);
+        });
+
+        // File attachments
+        Route::get('/attachments/{id}', \App\Http\Controllers\Api\Finance\ShowAttachmentController::class);
+        Route::delete('/attachments/{id}', \App\Http\Controllers\Api\Finance\DestroyAttachmentController::class);
+    });
 });
