@@ -25,6 +25,7 @@ class StoreController extends Controller
             throw new ResourceNotFoundException('List not found');
         }
 
+        $validated['due_date'] = $validated['due_date'] ?? $validated['metadata']['schedule']['startDate'] ?? null;
         $item = ListItem::create($validated);
         $item->series_id = (string) $item->id;
         $item->save();
