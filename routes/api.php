@@ -75,6 +75,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{listId}/challenges/{challengeId}', \App\Http\Controllers\Api\Fitness\DestroyChallengeController::class);
     });
 
+    // Calendar
+    Route::get('/calendar', \App\Http\Controllers\Api\Calendar\CalendarController::class);
+
     // Finance Routes
     Route::prefix('finance')->group(function () {
         // Defaults & profile
