@@ -53,6 +53,27 @@ class Budget extends Model
         return $this->amount - ($this->spent ?? 0);
     }
 
+    public function scopeForUser($query, string $userId)
+    {
+        return $query->where('user_id', $userId);
+    }
+
+    public function scopeForList($query, string $listId)
+    {
+        return $query->where('list_id', $listId);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeCurrent($query)
+    {
+        $now = now();
+        return $query->where('start_date', '<=', $now)->where('end_date', '>=', $now);
+    }
+
     public function getSpentAttribute()
     {
         return Transaction::where('list_id', $this->list_id)

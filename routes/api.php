@@ -78,6 +78,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // Calendar
     Route::get('/calendar', \App\Http\Controllers\Api\Calendar\CalendarController::class);
 
+    // Nutrition Routes
+    Route::prefix('nutrition')->group(function () {
+        Route::post('/{listId}/profile', \App\Http\Controllers\Api\Nutrition\SaveProfileController::class);
+        Route::get('/{listId}/dashboard', \App\Http\Controllers\Api\Nutrition\NutritionDashboardController::class);
+    });
+
     // Finance Routes
     Route::prefix('finance')->group(function () {
         // Defaults & profile
