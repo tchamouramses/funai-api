@@ -22,8 +22,6 @@ class FinanceDashboardService
             ->latest()
             ->get();
 
-        Log::info("transactions", [$transactions]);
-
         $previousPeriodTransactions = $this->getPreviousPeriodTransactions($listId, $period, $startDate, $endDate);
 
         return [
@@ -205,7 +203,7 @@ class FinanceDashboardService
     private function buildBudgetsSummary(string $listId): array
     {
         $budgets = Budget::where('list_id', $listId)
-            ->active()
+            ->where('is_active', true)
             ->get();
 
         return $budgets->map(function ($budget) use ($listId) {

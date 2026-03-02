@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use MongoDB\Laravel\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class Budget extends Model
 {
@@ -15,7 +16,6 @@ class Budget extends Model
         'list_id',
         'name',
         'amount',
-        'spent',
         'currency',
         'category',
         'period',
@@ -28,82 +28,48 @@ class Budget extends Model
     ];
 
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'amount' => 'decimal:2',
         'start_date' => 'datetime',
         'end_date' => 'datetime',
-        'amount' => 'float',
-        'spent' => 'float',
-        'is_recurring' => 'boolean',
-        'is_active' => 'boolean',
         'alert_thresholds' => 'array',
         'alerts_sent' => 'array',
+        'is_recurring' => 'boolean',
+        'is_active' => 'boolean',
+    ];
+
+    protected $appends = [
+        'remaining',
+        'percentage',
+        'spent',
     ];
 
     public function user()
     {
-        return $this->belongsTo(Profile::class, 'user_id', '_id');
+        return $this->belongsTo(User::class);
     }
 
-    public function list()
+    public function getRemainingAttribute()
     {
-        return $this->belongsTo(ListModel::class, 'list_id', '_id');
+        return $this->amount - ($this->spent ?? 0);
     }
 
-    public function scopeForUser($query, string $userId)
+    public function getSpentAttribute()
     {
-        return $query->where('user_id', $userId);
+        return Transaction::where('list_id', $this->list_id)
+            ->expenses()
+            ->whereBetween('date', [Carbon::parse($this->start_date), Carbon::parse($this->end_date)])
+            ->when($this->category && $this->category !== 'global', function ($q) {
+                $q->where('category', $this->category);
+            })
+            ->sum('amount');
     }
 
-    public function scopeForList($query, string $listId)
+    public function getPercentageAttribute()
     {
-        return $query->where('list_id', $listId);
-    }
-
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
-    }
-
-    public function scopeCurrent($query)
-    {
-        $now = now();
-
-        return $query->where('start_date', '<=', $now)
-            ->where('end_date', '>=', $now);
-    }
-
-    /**
-     * Get the usage percentage of the budget.
-     */
-    public function getUsagePercentageAttribute(): float
-    {
-        if ($this->amount <= 0) {
+        if (!$this->amount || $this->amount == 0) {
             return 0;
         }
 
-        return round(($this->spent / $this->amount) * 100, 2);
-    }
-
-    /**
-     * Get the remaining amount of the budget.
-     */
-    public function getRemainingAttribute(): float
-    {
-        return max(0, $this->amount - $this->spent);
-    }
-
-    /**
-     * Check if any alert threshold has been reached but not yet notified.
-     */
-    public function getUnsentAlertsAttribute(): array
-    {
-        $thresholds = $this->alert_thresholds ?? [70, 90, 100];
-        $sent = $this->alerts_sent ?? [];
-        $currentPercentage = $this->usage_percentage;
-
-        return array_filter($thresholds, function ($threshold) use ($sent, $currentPercentage) {
-            return $currentPercentage >= $threshold && ! in_array($threshold, $sent);
-        });
+        return round(($this->spent ?? 0) / $this->amount * 100, 2);
     }
 }

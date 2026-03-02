@@ -11,11 +11,11 @@ class IndexBudgetController extends Controller
 {
     public function __invoke(Request $request): JsonResponse
     {
-        $query = Budget::forUser(auth()->id())
+        $query = Budget::where('user_id', auth()->id())
             ->orderBy('created_at', 'desc');
 
         if ($request->has('list_id')) {
-            $query->forList($request->input('list_id'));
+            $query->where('list_id', $request->input('list_id'));
         }
 
         if ($request->has('is_active')) {
