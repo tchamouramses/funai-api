@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 // Auth Routes (public)
 Route::post('/auth/register', \App\Http\Controllers\Api\Auth\RegisterController::class);
 Route::post('/auth/login', \App\Http\Controllers\Api\Auth\LoginController::class);
+Route::post('/auth/google', \App\Http\Controllers\Api\Auth\GoogleLoginController::class);
 
 // Auth Routes (protected)
 Route::middleware('auth:sanctum')->group(function () {
