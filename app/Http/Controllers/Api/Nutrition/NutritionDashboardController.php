@@ -26,7 +26,7 @@ class NutritionDashboardController extends Controller
 
         // Get all sub-list IDs + root list
         $subListIds = ListModel::where('parent_list_id', $listId)
-            ->pluck('_id')
+            ->pluck('id')
             ->map(fn ($id) => (string) $id)
             ->toArray();
         array_push($subListIds, $listId);
@@ -72,7 +72,7 @@ class NutritionDashboardController extends Controller
                 $meta = $item->metadata ?? [];
 
                 return [
-                    'id' => (string) $item->_id,
+                    'id' => (string) $item->id,
                     'content' => $item->content,
                     'calories' => $meta['calories'] ?? 0,
                     'protein' => $meta['protein'] ?? 0,

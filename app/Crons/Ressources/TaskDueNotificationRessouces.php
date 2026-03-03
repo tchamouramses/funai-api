@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Crons\Ressources;
 
 use App\Models\ListItem;
 use App\Models\ListModel;
@@ -9,21 +9,16 @@ use App\Services\ExpoPushNotificationService;
 use App\Services\NotificationTranslationService;
 use App\Services\RecurringTaskService;
 use Carbon\Carbon;
-use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
-class SendTaskDueNotificationsCommand extends Command
+class TaskDueNotificationRessouces
 {
-    protected $signature = 'tasks:send-due-notifications';
+    public function __construct(public ExpoPushNotificationService $expoPushNotificationService, public RecurringTaskService $recurringTaskService)
+    {}
 
-    protected $description = 'Send reminder and expired push notifications for pending tasks';
-
-    public function handle(
-        ExpoPushNotificationService $expoPushNotificationService,
-        RecurringTaskService $recurringTaskService
-    ): int
+    public function __invoke()
     {
-        $now = Carbon::now();
+         $now = Carbon::now();
 
         $items = ListItem::where('completed', false)
             ->whereNotNull('due_date')
@@ -124,7 +119,5 @@ class SendTaskDueNotificationsCommand extends Command
                 ]);
             }
         }
-
-        return self::SUCCESS;
     }
 }

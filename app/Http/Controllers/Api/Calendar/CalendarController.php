@@ -74,7 +74,9 @@ class CalendarController extends Controller
         // Group items by date
         $grouped = [];
         foreach ($items as $item) {
-            $date = Carbon::parse($item->due_date)->toDateString();
+            $parsed = Carbon::parse($item->due_date);
+            $date = $parsed->toDateString();
+            $time = $parsed->format('H:i');
             $listId = (string) $item->list_id;
             $listInfo = $listMap[$listId] ?? null;
 
@@ -82,6 +84,7 @@ class CalendarController extends Controller
                 'id' => (string) $item->_id,
                 'content' => $item->content,
                 'dueDate' => $date,
+                'dueTime' => $time !== '00:00' ? $time : null,
                 'listId' => $listId,
                 'listTitle' => $listInfo ? $listInfo['title'] : 'Unknown',
                 'flowType' => $listInfo ? $listInfo['type'] : 'todo',
@@ -104,7 +107,9 @@ class CalendarController extends Controller
                 ->get();
 
             foreach ($transactions as $tx) {
-                $date = Carbon::parse($tx->date)->toDateString();
+                $parsedTx = Carbon::parse($tx->date);
+                $date = $parsedTx->toDateString();
+                $txTime = $parsedTx->format('H:i');
                 $txListId = (string) $tx->list_id;
                 $txListInfo = $listMap[$txListId] ?? null;
 
@@ -113,6 +118,7 @@ class CalendarController extends Controller
                     'id' => 'tx_' . (string) $tx->_id,
                     'content' => $sign . ' ' . number_format($tx->amount, 0, ',', ' ') . ' ' . ($tx->currency ?? 'XAF') . ' • ' . $tx->category,
                     'dueDate' => $date,
+                    'dueTime' => $txTime !== '00:00' ? $txTime : null,
                     'listId' => $txListId,
                     'listTitle' => $txListInfo ? $txListInfo['title'] : 'Unknown',
                     'flowType' => 'finance',
