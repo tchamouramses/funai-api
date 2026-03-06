@@ -7,13 +7,18 @@ use App\Http\Requests\RegisterPushTokenRequest;
 use App\Models\Profile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PushTokenController extends Controller
 {
     public function store(RegisterPushTokenRequest $request): JsonResponse
     {
-        $user = $request->user();
-        $profile = Profile::where('email', $user->email)->first();
+        $user = Auth::user();
+
+        Log::info("expo_token 1", ['token' => $request->validated('token'), 'user_id' => $user->id]);
+
+        $profile = Profile::where('user_id', $user->id)->first();
         if (! $profile) {
             $profile = Profile::create([
                 'email' => $user->email,
@@ -22,6 +27,8 @@ class PushTokenController extends Controller
                 'user_id' => (string) $user->id,
             ]);
         }
+
+        Log::info("expo_token 2", ['token' => $request->validated('token'), 'user_id' => $user->id]);
 
         $token = $request->validated('token');
 
@@ -55,7 +62,7 @@ class PushTokenController extends Controller
         ]);
 
         $user = $request->user();
-        $profile = Profile::where('email', $user->email)->first();
+        $profile = Profile::where('user_id', $user->id)->first();
         if (! $profile) {
             return response()->json([
                 'data' => [
