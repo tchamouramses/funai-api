@@ -83,7 +83,7 @@ class GoogleLoginController extends Controller
                     'default_reminder_delay' => 15,
                     'expo_push_tokens' => [],
                 ],
-                'user_id' => (string) $user->id,
+                'user_id' => $user->id,
             ]);
         }
 
