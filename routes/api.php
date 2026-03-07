@@ -44,6 +44,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Flow Assistant Routes
     Route::prefix('flow-assistant')->group(function () {
         Route::post('/general/thread', \App\Http\Controllers\Api\FlowAssistant\GetOrCreateGeneralFlowThreadController::class);
+        Route::get('/general/messages', [\App\Http\Controllers\Api\FlowAssistant\IndexFlowMessageController::class, 'general']);
+        Route::post('/general/messages', [\App\Http\Controllers\Api\FlowAssistant\StoreFlowMessageController::class, 'storeGeneral']);
         Route::post('/{listId}/thread', \App\Http\Controllers\Api\FlowAssistant\GetOrCreateFlowThreadController::class);
         Route::post('/{listId}/messages', \App\Http\Controllers\Api\FlowAssistant\StoreFlowMessageController::class);
         Route::get('/{listId}/messages', [\App\Http\Controllers\Api\FlowAssistant\IndexFlowMessageController::class, 'show']);
