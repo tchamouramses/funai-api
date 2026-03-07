@@ -8,6 +8,18 @@ class AssistantConfigService
     {
         $assistantType = trim($assistantType);
 
+        // Delegate flow assistant types to FlowAssistantConfigService
+        if (str_starts_with($assistantType, 'flow_')) {
+            $flowType = str_replace('flow_', '', $assistantType);
+            $flowConfigService = new FlowAssistantConfigService();
+
+            if ($flowType === 'general') {
+                return $flowConfigService->buildGeneralConfig();
+            }
+
+            return $flowConfigService->buildConfig($flowType);
+        }
+
         if ($assistantType === 'list_assistant') {
             return [
                 'model' => 'gpt-4o',

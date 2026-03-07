@@ -41,6 +41,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/chat/messages', \App\Http\Controllers\Api\Assistant\StoreChatAssistantMessageController::class);
     });
 
+    // Flow Assistant Routes
+    Route::prefix('flow-assistant')->group(function () {
+        Route::post('/general/thread', \App\Http\Controllers\Api\FlowAssistant\GetOrCreateGeneralFlowThreadController::class);
+        Route::post('/{listId}/thread', \App\Http\Controllers\Api\FlowAssistant\GetOrCreateFlowThreadController::class);
+        Route::post('/{listId}/messages', \App\Http\Controllers\Api\FlowAssistant\StoreFlowMessageController::class);
+        Route::get('/{listId}/messages', [\App\Http\Controllers\Api\FlowAssistant\IndexFlowMessageController::class, 'show']);
+        Route::get('/messages', [\App\Http\Controllers\Api\FlowAssistant\IndexFlowMessageController::class, 'index']);
+    });
+
     Route::prefix('lists')->group(function () {
         Route::post('/', \App\Http\Controllers\Api\List\StoreController::class);
         Route::get('/{id}', \App\Http\Controllers\Api\List\ShowController::class);

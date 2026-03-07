@@ -30,6 +30,7 @@ class ListModel extends Model
         'is_recurring',
         'recurrence_pattern',
         'recurrence_start_date',
+        'thread_id',
     ];
 
     protected $casts = [
