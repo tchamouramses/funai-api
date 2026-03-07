@@ -16,7 +16,7 @@ class GetOrCreateGeneralFlowThreadController extends Controller
         OpenAIService $openAIService,
         FlowAssistantConfigService $configService
     ): JsonResponse {
-        $userId = (string) auth()->id();
+        $userId = auth()->id();
 
         // Get or create the shared "flow_general" assistant
         $sharedAssistant = SharedAssistant::where('type', 'flow_general')->first();

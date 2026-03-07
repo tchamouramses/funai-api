@@ -15,6 +15,7 @@ class Message extends Model
         'role',
         'content',
         'is_hidden',
+        'type',
     ];
 
     protected $casts = [

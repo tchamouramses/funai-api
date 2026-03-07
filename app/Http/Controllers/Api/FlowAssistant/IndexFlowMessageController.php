@@ -31,6 +31,7 @@ class IndexFlowMessageController extends Controller
 
         $messages = Message::where('conversation_id', $listId)
             ->orderBy('created_at', 'asc')
+            ->where('type', 'flow')
             ->paginate(50);
 
         return response()->json([
@@ -57,6 +58,7 @@ class IndexFlowMessageController extends Controller
 
         $messages = Message::whereIn('conversation_id', $listIds)
             ->orderBy('created_at', 'desc')
+            ->where('type', 'flow')
             ->paginate(50);
 
         return response()->json([
@@ -74,7 +76,7 @@ class IndexFlowMessageController extends Controller
         FlowAssistantConfigService $configService
     ): JsonResponse
     {
-        $userId = (string) auth()->id();
+        $userId = auth()->id();
         $conversation = Conversation::where('user_id', $userId)
             ->where('type', 'flow_general')
             ->first();
@@ -116,13 +118,14 @@ class IndexFlowMessageController extends Controller
             }
         }
 
-        $messages = Message::where('conversation_id', (string) $conversation->_id)
+        $messages = Message::where('conversation_id', $conversation->id)
+            ->where('type', 'flow')
             ->orderBy('created_at', 'asc')
             ->paginate(50);
 
         return response()->json([
             'data' => [
-                'conversation_id' => (string) $conversation->_id,
+                'conversation_id' => $conversation->id,
                 'messages' => $messages,
             ],
         ]);

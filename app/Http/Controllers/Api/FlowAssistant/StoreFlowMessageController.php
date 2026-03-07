@@ -35,6 +35,7 @@ class StoreFlowMessageController extends Controller
             'conversation_id' => $listId,
             'role' => $validated['role'],
             'content' => $validated['content'],
+            'type' => 'flow',
         ]);
 
         return response()->json([
@@ -56,7 +57,7 @@ class StoreFlowMessageController extends Controller
             'content' => 'required|string',
         ]);
 
-        $userId = (string) auth()->id();
+        $userId = auth()->id();
         $conversation = Conversation::where('user_id', $userId)
             ->where('type', 'flow_general')
             ->first();
@@ -100,9 +101,10 @@ class StoreFlowMessageController extends Controller
         }
 
         $message = Message::create([
-            'conversation_id' => (string) $conversation->_id,
+            'conversation_id' => $conversation->id,
             'role' => $validated['role'],
             'content' => $validated['content'],
+            'type' => 'flow',
         ]);
 
         $conversation->touch();
@@ -110,7 +112,7 @@ class StoreFlowMessageController extends Controller
         return response()->json([
             'data' => [
                 'message' => $message,
-                'conversation_id' => (string) $conversation->_id,
+                'conversation_id' => $conversation->id,
             ],
         ], 201);
     }

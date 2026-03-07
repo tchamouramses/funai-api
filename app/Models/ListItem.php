@@ -49,4 +49,26 @@ class ListItem extends Model
     {
         return $this->hasMany(ProgressEntry::class, 'item_id', '_id');
     }
+
+    public function calculateSchedule($startDate, $recurrencePattern): array
+    {
+        $schedule = [];
+        $schedule['daysOfWeek'] = $recurrencePattern['daysOfWeek'] ?? [];
+        if(isset($recurrencePattern['executionHour'])){
+            $startDate->setTime($recurrencePattern['executionHour'], $recurrencePattern['executionMinute'] ?? 0, 0);
+        }
+
+        $schedule['startDate'] = $startDate;
+        if($recurrencePattern['endType'] == 'count'){
+            $schedule['weeksCount'] = $recurrencePattern['count'] ?? null;
+        } elseif($recurrencePattern['endType'] == 'date') {
+            $schedule['endDate'] = $recurrencePattern['endDate'] ?? null;
+        }
+
+        $this->due_date = $startDate;
+        $this->metadata = array_merge($this->metadata ?? [], ['schedule' => $schedule]);
+        $this->save();
+
+        return $schedule;
+    }
 }
