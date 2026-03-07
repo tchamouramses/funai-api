@@ -12,6 +12,7 @@ class IndexController extends Controller
     {
         $conversations = Conversation::where('user_id', auth()->id())
             ->whereNot('type', 'chat_assistant')
+            ->whereNot('type', 'flow_general')
             ->orderBy('pinned', 'desc')
             ->orderBy('updated_at', 'desc')
             ->paginate(20);
