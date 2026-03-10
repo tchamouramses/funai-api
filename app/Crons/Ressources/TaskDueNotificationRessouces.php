@@ -69,7 +69,7 @@ class TaskDueNotificationRessouces
                     $notification = NotificationTranslationService::getTaskReminderNotification($locale, $item->content);
                     Log::info("Sending reminder notification for item: " . $item->id, $notification);
 
-                    $expoPushNotificationService->sendToTokens(
+                    $this->expoPushNotificationService->sendToTokens(
                         $tokens,
                         $notification['title'],
                         $notification['body'],
@@ -88,7 +88,7 @@ class TaskDueNotificationRessouces
                 if ($enabled && ! empty($tokens) && ! $item->expired_notified_at && $now->greaterThanOrEqualTo($dueAt)) {
                     $notification = NotificationTranslationService::getTaskExpiredNotification($locale, $item->content);
 
-                    $expoPushNotificationService->sendToTokens(
+                    $this->expoPushNotificationService->sendToTokens(
                         $tokens,
                         $notification['title'],
                         $notification['body'],
