@@ -22,29 +22,33 @@ class TaskDueNotificationRessouces
 
         $items = ListItem::where('completed', false)
             ->whereNotNull('due_date')
-            ->where(function ($query) {
-                $query->whereNull('reminder_notified_at')
-                    ->orWhereNull('expired_notified_at')
-                    ->orWhereNull('missed_processed_at');
+            ->where(function ($query) use ($now) {
+                $query->orWhereNull('reminder_notified_at')
+                    ->orWhereNull('expired_notified_at');
             })
+            ->whereNull('reminder_notified_at')
             ->get();
 
         foreach ($items as $item) {
             try {
                 $list = ListModel::find($item->list_id);
                 if (! $list) {
+                    Log::info("List not found for item: " . $item->id);
                     continue;
                 }
 
-                $user = Profile::find($list->user_id);
+                $_user = User::find($list->user_id);
+
+                $user = Profile::where('email', $_user->email)->first();
                 if (! $user) {
+                    Log::info("User not found for item: " . $item->id);
                     continue;
                 }
 
                 $settings = (array) ($user->notification_settings ?? []);
                 $enabled = (bool) ($settings['enabled'] ?? true);
-                $tokens = array_values(array_filter((array) ($settings['expo_push_tokens'] ?? [])));
-                $defaultReminderDelay = (int) ($settings['default_reminder_delay'] ?? ($settings['default_reminder_time'] ?? 15));
+                $tokens = (array) ($settings['expo_push_tokens'] ?? []);
+                $defaultReminderDelay = (int) ($settings['default_reminder_delay'] ?? 15);
                 if ($defaultReminderDelay < 0) {
                     $defaultReminderDelay = 0;
                 }
@@ -60,9 +64,9 @@ class TaskDueNotificationRessouces
                     && ! empty($tokens)
                     && ! $item->reminder_notified_at
                     && $now->greaterThanOrEqualTo($reminderAt)
-                    && $now->lessThan($dueAt)
                 ) {
                     $notification = NotificationTranslationService::getTaskReminderNotification($locale, $item->content);
+                    Log::info("Sending reminder notification for item: " . $item->id, $notification);
 
                     $expoPushNotificationService->sendToTokens(
                         $tokens,
@@ -70,9 +74,9 @@ class TaskDueNotificationRessouces
                         $notification['body'],
                         [
                             'type' => 'task_due_reminder',
-                            'list_id' => (string) $list->id,
-                            'task_id' => (string) $item->id,
-                            'url' => 'myapp://lists/'.(string) $list->id.'?taskId='.(string) $item->id,
+                            'list_id' => $list->id,
+                            'task_id' => $item->id,
+                            'url' => 'myapp://flow/' . $list->id.'?taskId=' . $item->id,
                         ]
                     );
 
@@ -89,9 +93,9 @@ class TaskDueNotificationRessouces
                         $notification['body'],
                         [
                             'type' => 'task_due_expired',
-                            'list_id' => (string) $list->id,
-                            'task_id' => (string) $item->id,
-                            'url' => 'myapp://lists/'.(string) $list->id.'?taskId='.(string) $item->id,
+                            'list_id' => $list->id,
+                            'task_id' => $item->id,
+                            'url' => 'myapp://flow/' . $list->id.'?taskId=' . $item->id,
                         ]
                     );
 
@@ -112,6 +116,7 @@ class TaskDueNotificationRessouces
                     $recurringTaskService->recordRecurrenceStatus($item, 'missed');
                     $recurringTaskService->cloneNextOccurrenceIfPossible($item, $list);
                 }
+                    Log::info("Fin du cron pour l'item: " . $item->id);
             } catch (\Throwable $throwable) {
                 Log::error('Error while sending due task notification', [
                     'item_id' => (string) $item->id,
