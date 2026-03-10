@@ -10,6 +10,7 @@ use App\Services\NotificationTranslationService;
 use App\Services\RecurringTaskService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use App\Models\User;
 
 class TaskDueNotificationRessouces
 {
